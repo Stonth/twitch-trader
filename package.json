@@ -1,0 +1,16 @@
+{
+  "name": "stonks",
+  "version": "1.0.0",
+  "description": "Twitch trades stocks.",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "David Fine",
+  "license": "ISC",
+  "dependencies": {
+    "canvas": "^2.6.1",
+    "mysql": "^2.18.1",
+    "tmi.js": "^1.7.0"
+  }
+}
