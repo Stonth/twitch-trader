@@ -1,7 +1,7 @@
 const Channel = require('./channel');
 const {createCanvas} = require('canvas');
 
-const ChannelChat = function (streamSettings, x, y, width, height, backgroundColor, userColor, messageColor, font, lineHeight, maxMessages) {
+const ChannelChat = function (streamSettings, x, y, width, height, backgroundColor, userColor, messageColor, font, lineHeight, maxMessages, padding) {
     this.width = width;
     this.height = height;
     Channel.call(this, streamSettings, x, y);
@@ -10,13 +10,12 @@ const ChannelChat = function (streamSettings, x, y, width, height, backgroundCol
     this.userColor = userColor;
     this.lineHeight = lineHeight;
     this.maxMessages = maxMessages;
+    this.padding = padding;
 
     this.messages = [];
     
-    this.messageCanvas = createCanvas(this.getWidth(), this.getHeight());
-    this.messageContext = this.messageCanvas.getContext('2d');
-    this.messageContext.textBaseline = 'top';
-    this.messageContext.font = font;
+    this.context.textBaseline = 'top';
+    this.context.font = font;
     this.redraw();
 
 };
@@ -36,30 +35,28 @@ ChannelChat.prototype.redraw = function () {
     this.context.fillRect(0, 0, this.getWidth(), this.getHeight());
 
     if (this.messages.length > 0) {
-        this.messageContext.fillStyle = this.backgroundColor;
-        this.messageContext.fillRect(0, 0, this.getWidth(), this.getHeight());
-
-        let y = 0;
+        let y = this.getHeight() - this.getChatHeight() - this.padding[1];
         for (message of this.messages.reverse()) {
             // First, write the username.
-            this.messageContext.fillStyle = this.userColor;
+            this.context.fillStyle = this.userColor;
             let userStr = '[' + message.user + ']: ';
-            this.messageContext.fillText(userStr, 0, y);
-            let x = this.messageContext.measureText(userStr).width;
+            let x = this.padding[0];
+            this.context.fillText(userStr, x, y);
+            x = this.context.measureText(userStr).width;
 
             // Write the other messages.
-            this.messageContext.fillStyle = this.messageColor;
+            this.context.fillStyle = this.messageColor;
             let wordsOnLine = 1;
             const words = message.message.split(' ');
             let line = '';
             for (let i = 0; i < words.length; i++) {
                 const testLine = line + words[i] + ' ';
-                const width = this.messageContext.measureText(testLine).width;
-                if (x + width > this.getWidth() && wordsOnLine > 0) {
-                    this.messageContext.fillText(line, x, y);
+                const width = this.context.measureText(testLine).width;
+                if (x + width > this.getWidth() - this.padding[2] && wordsOnLine > 0) {
+                    this.context.fillText(line, x, y);
                     y += this.lineHeight;
                     line = words[i] + ' ';
-                    x = 0;
+                    x = this.padding[0];
                     wordsOnLine = 0;
                 }
                 else {
@@ -67,14 +64,45 @@ ChannelChat.prototype.redraw = function () {
                     line = testLine;
                 }
             }
-            this.messageContext.fillText(line, x, y);
+            this.context.fillText(line, x, y);
             y += this.lineHeight;
         }
-
-        this.context.putImageData(this.messageContext.getImageData(0, 0, this.getWidth(), y), 0, this.getHeight() - y);
     }
 
     this.dirty = true;
+};
+
+ChannelChat.prototype.getChatHeight = function () {
+    if (this.messages.length <= 0) {
+        return 0;
+    }
+    let y = 0;
+    for (message of this.messages.reverse()) {
+        // The username.
+        let userStr = '[' + message.user + ']: ';
+        let x = this.padding[0] + this.context.measureText(userStr).width;
+
+        // The other messages.
+        let wordsOnLine = 1;
+        const words = message.message.split(' ');
+        let line = '';
+        for (let i = 0; i < words.length; i++) {
+            const testLine = line + words[i] + ' ';
+            const width = this.context.measureText(testLine).width;
+            if (x + width > this.getWidth() - this.padding[2] && wordsOnLine > 0) {
+                y += this.lineHeight;
+                line = words[i] + ' ';
+                x = this.padding[0];
+                wordsOnLine = 0;
+            }
+            else {
+                wordsOnLine++;
+                line = testLine;
+            }
+        }
+        y += this.lineHeight;
+    }
+    return y;
 };
 
 ChannelChat.prototype.getWidth = function () {

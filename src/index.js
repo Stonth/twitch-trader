@@ -21,9 +21,17 @@ fs.readFile('config.json', (err, data) => {
         bitrate: 4000 * 1000
     }
 
+    const palette = [
+        '#0bd3d3', // blue
+        '#f890e7', // pink
+        '#ffffff', // white
+        '#d0d0d0', // gray
+        '#000000' // black
+    ];
+
     const stream = new Stream(streamSettings);
-    stream.addChannel(ChannelBackground, [0, 0, '#FFFFFF']);
-    const chatChannel = stream.addChannel(ChannelChat, [0, 0, 500, streamSettings.height, '#E0E0E0', '#00BB00', '#00FF00', '20px sans-serif', 30, 60]);
+    stream.addChannel(ChannelBackground, [0, 0, palette[3]]);
+    const chatChannel = stream.addChannel(ChannelChat, [16, 16, 400, streamSettings.height - 32, palette[4], palette[0], palette[0], '20px sans-serif', 30, 60, [8, 8, 8, 8]]);
     const chat = new Chat(config.username, config.oauth);
     chat.addMessageListener((channel, tags, message) => {
         chatChannel.addMessage(tags.username, message);

@@ -30,7 +30,6 @@ Stream.prototype.removeChannel = function (channel) {
 Stream.prototype.startStream = function () {
     this.process = spawn('ffmpeg', [
         '-f', 'rawvideo',
-        '-vcodec', 'rawvideo', // TODO. Redundant?
         '-s', this.streamSettings.width + 'x' + this.streamSettings.height,
         '-pix_fmt', 'argb',
         '-r', this.streamSettings.framerate,
@@ -39,40 +38,19 @@ Stream.prototype.startStream = function () {
         // '-i', 'PATH_TO_YOUR_AUDIO_FILE.mp3',
         '-f', 'flv',
         '-vcodec', 'libx264',
-        '-profile:v', 'main', // TODO. Do we need this?
+        '-profile:v', 'main', // See: https://trac.ffmpeg.org/wiki/Encode/H.264#Profile
         '-g', this.streamSettings.framerate * 2,
         '-keyint_min', this.streamSettings.framerate,
         '-b:v', this.streamSettings.bitrate,
         '-minrate', this.streamSettings.bitrate,
         '-maxrate', this.streamSettings.bitrate,
-        '-pix_fmt', 'yuv420p', // Pretty sure this is necessary
-        '-preset', 'ultrafast', //TODO: What does this do
-        '-tune', 'zerolatency', //TODO: What does this do
-        '-threads', '0', //TODO: What does this do
-        '-bufsize', this.streamSettings.bitrate,
-        this.streamSettings.out
-    ]);
-    console.log([
-        '-f', 'rawvideo',
-        '-vcodec', 'rawvideo', // TODO. Redundant?
-        '-s', this.streamSettings.width + 'x' + this.streamSettings.height,
-        '-pix_fmt', 'argb',
-        '-r', this.streamSettings.framerate,
-        '-i', '-',
-        // '-stream_loop', '-1',
-        // '-i', 'PATH_TO_YOUR_AUDIO_FILE.mp3',
-        '-f', 'flv',
-        '-vcodec', 'libx264',
-        '-profile:v', 'main', // TODO. Do we need this?
-        '-g', this.streamSettings.framerate * 2,
-        '-keyint_min', this.streamSettings.framerate,
-        '-b:v', this.streamSettings.bitrate,
-        '-minrate', this.streamSettings.bitrate,
-        '-maxrate', this.streamSettings.bitrate,
-        '-pix_fmt', 'yuv420p', // Pretty sure this is necessary
-        '-preset', 'ultrafast', //TODO: What does this do
-        '-tune', 'zerolatency', //TODO: What does this do
-        '-threads', '0', //TODO: What does this do
+        '-pix_fmt', 'yuv420p', // I couldn't get streaming to work
+                               // without this pixel format.
+        '-preset', 'ultrafast', // Lossy encoding, but fast.
+                                // See: https://trac.ffmpeg.org/wiki/Encode/H.264#LosslessH.264
+        '-tune', 'zerolatency', // Good option for streaming
+                                // See: https://trac.ffmpeg.org/wiki/Encode/H.264#LowLatency
+        '-threads', '0',
         '-bufsize', this.streamSettings.bitrate,
         this.streamSettings.out
     ]);

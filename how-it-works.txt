@@ -1,0 +1,5 @@
+How It Works:
+
+It all starts with a $1,000,0000 cash endowment. From there, viewers can work together to buy and sell stocks, which will increase or decrease total portfolio value (top right). Will Twitch chat gain financial independance? Or will they squander it all?
+
+Every hour, there are two phases. A suggest phase (20m) and a vote phase (40m). During the suggest phase, viwers can use the command "!suggest [buy|sell] [TICKER] [AMOUNT]" to suggest an action. Each viewer can suggest a single action per phase. During the vote phase, viewers can vote on which suggested action to take. Each suggestion will appear on the screen with a number beside it. Viewers vote with the command "!vote [#]". Viewers can vote for as many suggestions as they want. The suggestion with the most votes will be the action taken.
