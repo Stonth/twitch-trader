@@ -29,6 +29,7 @@ Stream.prototype.removeChannel = function (channel) {
 
 Stream.prototype.startStream = function () {
     this.process = spawn('ffmpeg', [
+        '-y', // In case the output is a video.
         '-f', 'rawvideo',
         '-s', this.streamSettings.width + 'x' + this.streamSettings.height,
         '-pix_fmt', 'argb',
