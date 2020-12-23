@@ -91,9 +91,12 @@ Model.prototype.save = function () {
     Gets a list of objects that correspond to the fields
     or extra queries.
 */
-Model.prototype.get = function (extra) {
+Model.prototype.get = function (extra, suffix) {
     if (!extra) {
         extra = [];
+    }
+    if (!suffix) {
+        suffix = '';
     }
     return new Promise((resolve1, reject1) => {
         Model.database((connection) => {
@@ -105,8 +108,8 @@ Model.prototype.get = function (extra) {
                         // Field conditions.
                         fieldNames.map(el => el + '=?').join(' AND ') +
                         (extra.length && fieldValues.length ? ' AND ' : '') +
-                        // Extra conditions.
-                        extra.join(' AND ') + ';'
+                        // Extra conditions and suffix.
+                        extra.join(' AND ') + (suffix ? (' ' + suffix) : '') + ';'
                     , fieldValues, (err, results) => {
                     if (err) {
                         reject2(err);

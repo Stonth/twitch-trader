@@ -26,7 +26,17 @@ Transaction.initialize = function () {
                     if (err) {
                         console.warn(err);
                     }
-                    resolve2();
+
+                    // If there are no items in the database, add the initial balance.
+                    const all = new Transaction();
+                    all.get().then((results) => {
+                        if (results.length <= 0) {
+                            const initial = new Transaction({balance: 1000000});
+                            initial.save().then(resolve2).catch(reject2);
+                        } else {
+                            resolve2();
+                        }
+                    }).catch(reject2);
                 });
             })
         }).then(resolve1).catch(reject1);
