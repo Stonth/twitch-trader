@@ -1,6 +1,9 @@
 const mysql = require('mysql');
 
 const Model = function (fields) {
+    if (!fields) {
+        fields = {};
+    }
     this.fields = Object.assign({}, fields);
 };
 
@@ -116,6 +119,38 @@ Model.prototype.get = function (extra, suffix) {
                     } else {
                         // Return an array of results.
                         resolve2(results.map(x => new this.constructor(x)));
+                    }
+                });
+            })
+        }).then(resolve1).catch(reject1);
+    });
+};
+
+/*
+    Delete objects that correspond to the fields
+    or extra queries.
+*/
+Model.prototype.delete = function (extra) {
+    if (!extra) {
+        extra = [];
+    }
+    return new Promise((resolve1, reject1) => {
+        Model.database((connection) => {
+            return new Promise((resolve2, reject2) => {
+                const fieldNames = Object.keys(this.fields);
+                const fieldValues = fieldNames.map(x => this.fields[x]);
+                connection.query(
+                    'DELETE FROM ' + this.table + (extra.length || fieldValues.length ? ' WHERE ' : '') +
+                        // Field conditions.
+                        fieldNames.map(el => el + '=?').join(' AND ') +
+                        (extra.length && fieldValues.length ? ' AND ' : '') +
+                        // Extra conditions and suffix.
+                        extra.join(' AND ') + ';'
+                    , fieldValues, (err) => {
+                    if (err) {
+                        reject2(err);
+                    } else {
+                        resolve2();
                     }
                 });
             })

@@ -18,6 +18,7 @@ Transaction.initialize = function () {
                         'suggestion_id INTEGER, ' +
                         'price DOUBLE, ' +
                         'balance DOUBLE NOT NULL, ' +
+                        'after_phase_id INTEGER NOT NULL, ' +
                         'time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, ' +
                         'PRIMARY KEY (id)' +
                     ');'
@@ -31,7 +32,7 @@ Transaction.initialize = function () {
                     const all = new Transaction();
                     all.get().then((results) => {
                         if (results.length <= 0) {
-                            const initial = new Transaction({balance: 1000000});
+                            const initial = new Transaction({balance: 1000000, after_phase_id: 0});
                             initial.save().then(resolve2).catch(reject2);
                         } else {
                             resolve2();

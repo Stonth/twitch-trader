@@ -2,6 +2,7 @@ const Model = require('./model');
 const Ticker = require('./ticker');
 
 const rp = require('request-promise');
+const Transaction = require('./transaction');
 
 const Position = function (fields) {
     Model.call(this, fields);
@@ -11,7 +12,45 @@ Position.prototype = Object.create(Model.prototype);
 Position.prototype.table = 'positions';
 Position.prototype.constructor = Position;
 
-// TODO: can only have 20 positions max at a time!
+// Can only have 20 positions max at a time!
+Position.MAX_COUNT = 20;
+
+// Get the total worth.
+Position.getTotalWorth = function (phase) {
+    return new Promise((resolve1, reject1) => {
+        if (!phase.fieldExists('id')) {
+            reject('phase is missing id');
+        } else {
+            Model.database((connection) => {
+                return new Promise((resolve2, reject2) => {
+                    // Get the total for all the positions.
+                    connection.query(
+                        'SELECT SUM(a.x) as s FROM (' + 
+                            'SELECT tickers.price*positions.quantity as x ' + 
+                            'FROM positions ' +
+                            'INNER JOIN tickers ON positions.ticker_id=tickers.id' +
+                        ') as a;'
+                    , (err, results) => {
+                        if (err) {
+                            reject2(err);
+                        } else {
+                            const stockValue = results[0].s;
+                            const transactions = new Transaction({after_phase_id: phase.getField('id')});
+                            transactions.get().then((results) => {
+                                if (results.length <= 0) {
+                                    reject2(new Error('invalid phase'));
+                                } else {
+                                    // Resolve stock value + last cash balance.
+                                    resolve2(stockValue + results[0].getField('balance'));
+                                }
+                            }).catch(reject2);
+                        }
+                    });
+                })
+            }).then(resolve1).catch(reject1);
+        }
+    });
+};
 
 Position.refreshPrices = function () {
     return new Promise((resolve, reject) => {

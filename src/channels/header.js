@@ -1,7 +1,7 @@
 const Channel = require('./channel');
 const { loadImage } = require('canvas');
 
-const ChannelBottom = function (streamSettings, x, y, width, height, backgroundColor, src) {
+const ChannelHeader = function (streamSettings, x, y, width, height, backgroundColor, src) {
     this.width = width;
     this.height = height;
     Channel.call(this, streamSettings, x, y);
@@ -13,14 +13,14 @@ const ChannelBottom = function (streamSettings, x, y, width, height, backgroundC
         this.dirty = true;
     });
 };
-ChannelBottom.prototype = Object.create(Channel.prototype);
+ChannelHeader.prototype = Object.create(Channel.prototype);
 
-ChannelBottom.prototype.getWidth = function () {
+ChannelHeader.prototype.getWidth = function () {
     return this.width;
 };
 
-ChannelBottom.prototype.getHeight = function () {
+ChannelHeader.prototype.getHeight = function () {
     return this.height;
 };
 
-module.exports = ChannelBottom;
+module.exports = ChannelHeader;

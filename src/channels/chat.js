@@ -1,13 +1,14 @@
 const Channel = require('./channel');
 const {createCanvas} = require('canvas');
 
-const ChannelChat = function (streamSettings, x, y, width, height, backgroundColor, userColor, messageColor, font, lineHeight, maxMessages, padding) {
+const ChannelChat = function (streamSettings, x, y, width, height, backgroundColor, userColor, messageColor, actionColor, font, lineHeight, maxMessages, padding) {
     this.width = width;
     this.height = height;
     Channel.call(this, streamSettings, x, y);
     this.backgroundColor = backgroundColor;
     this.messageColor = messageColor;
     this.userColor = userColor;
+    this.actionColor = actionColor;
     this.lineHeight = lineHeight;
     this.maxMessages = maxMessages;
     this.padding = padding;
@@ -30,6 +31,15 @@ ChannelChat.prototype.addMessage = function (user, message) {
     this.redraw();
 };
 
+ChannelChat.prototype.addAction = function (action) {
+    this.messages.push({ isAction: true, user, message: action });
+    if (this.messages.length > this.maxMessages) {
+        this.messages.splice(this.messages.length - 1, 1);
+    }
+
+    this.redraw();
+};
+
 ChannelChat.prototype.redraw = function () {
     this.context.fillStyle = this.backgroundColor;
     this.context.fillRect(0, 0, this.getWidth(), this.getHeight());
@@ -38,15 +48,19 @@ ChannelChat.prototype.redraw = function () {
         let y = this.getHeight() - this.getChatHeight() - this.padding[1];
         for (message of this.messages.reverse()) {
             // First, write the username.
-            this.context.fillStyle = this.userColor;
-            let userStr = '[' + message.user + ']: ';
             let x = this.padding[0];
-            this.context.fillText(userStr, x, y);
-            x = this.context.measureText(userStr).width;
+            if (!message.isAction) {
+                this.context.fillStyle = this.userColor;
+                let userStr = '[' + message.user + ']: ';
+                this.context.fillText(userStr, x, y);
+                x = this.context.measureText(userStr).width;
+                this.context.fillStyle = this.messageColor;
+            } else {
+                this.context.fillStyle = this.actionColor;
+            }
 
             // Write the other messages.
-            this.context.fillStyle = this.messageColor;
-            let wordsOnLine = 1;
+            let wordsOnLine = message.isAction ? 0 : 1;
             const words = message.message.split(' ');
             let line = '';
             for (let i = 0; i < words.length; i++) {
@@ -78,12 +92,15 @@ ChannelChat.prototype.getChatHeight = function () {
     }
     let y = 0;
     for (message of this.messages.reverse()) {
-        // The username.
-        let userStr = '[' + message.user + ']: ';
-        let x = this.padding[0] + this.context.measureText(userStr).width;
+        let x = this.padding[0];
+        if (!message.isAction) {
+            // The username.
+            let userStr = '[' + message.user + ']: ';
+            x += this.context.measureText(userStr).width;
+        }
 
         // The other messages.
-        let wordsOnLine = 1;
+        let wordsOnLine = message.isAction ? 0 : 1;
         const words = message.message.split(' ');
         let line = '';
         for (let i = 0; i < words.length; i++) {
